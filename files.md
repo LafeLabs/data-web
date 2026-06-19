@@ -24,6 +24,7 @@
  - [load-file.php](load-file.php)
  - [replicate-file-set.php](replicate-file-set.php)
  - [replicate-local-file-set.php](replicate-local-file-set.php)
+ - [save-file-get.php](save-file-get.php)
  - [save-file.php](save-file.php)
  - [save-png.php](save-png.php)
  - [upload-image.php](upload-image.php)
