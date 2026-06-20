@@ -12,109 +12,13 @@
     <main></main>
     <table id = "inputtable">
         <tr>
-            <td>Pump Frquency [GHz]:</td>
+            <td>message:</td>
             <td>
                 <input>
             </td>
-        </tr>
-        <tr>
-            <td>Pump Power [dBm]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>DC Bias [V]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        
-        <tr>
-            <td>Sweep Start Frequency [GHz]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>Sweep Stop Frequency [GHz]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>Sweep Number of Points:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>VNA IFBW [Hz]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>VNA Power [dBm]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-
-        <tr>
-            <td>SPA RBW [Hz]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>SPA VBW [Hz]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>
-        <tr>
-            <td>Programmable Attenuator Value[dB]:</td>
-            <td>
-                <input>
-            </td>
-        </tr>        
-    </table>
-    <span id = "pump-status-span"></span>
-    <span id = "dc-bias-status-span"></span>
-    <span id = "warm-switch-state-span"></span>
-    <span id = "cold-switch-state-span"></span>
-
-    <table id = "on-off-table">
-        <tr>
-            <td>pump on/off</td>
-            <td>flux bias on/off</td>
-        </tr>
-    </table>    
-    <table id = "warm-switch-select-table">
-        <tr>
-            <td>s11</td>
-            <td>s21</td>
-            <td>s12</td>
-            <td>s22</td>
-            <td>noise</td>
-            <td>diode</td>
         </tr>
     </table>
 
-    <table id = "cold-switch-select-table">
-        <tr>
-            <td>short</td>
-            <td>open</td>
-            <td>load</td>
-            <td>port_1</td>
-            <td>port_2</td>
-            <td>port_3</td>
-            <td>port_4</td>
-            <td>port_5</td>
-            <td>port_6</td>
-        </tr>
-    </table>
 </div>
 <div id = "data-scroll">
     <h1>DATA</h1>
@@ -126,7 +30,12 @@
 </div>
 <script>
 
-dataJSON = {}
+
+instrumentControl = {}
+
+instrumentControl.mouse_x = 0.0;
+instrumentControl.mouse_y = 0.0;
+instrumentControl.mouse_z = 0;//mouse wheel or equivalent
 
 let vnaImg = null;       // Will hold the processed p5.Image object
 let isFetching = false;  // Your guard flag defined in the fetch function
@@ -136,7 +45,7 @@ function savejson(){
     var httpc = new XMLHttpRequest();
     httpc.open("POST", "save-file.php", true);
     httpc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    httpc.send("data="+encodeURIComponent(JSON.stringify(liveWebInstrument,null,"    "))+"&filename=live-web-instrument.json");//send text to save-file.php    
+    httpc.send("data="+encodeURIComponent(JSON.stringify(liveWebInstrument,null,"    "))+"&filename=instrument-control.json");//send text to save-file.php    
 }
 
 inputs = document.getElementById("inputtable").getElementsByTagName("INPUT");
@@ -151,117 +60,33 @@ function setup() {
     var httpc = new XMLHttpRequest();
     httpc.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            liveWebInstrument = JSON.parse(this.responseText);
-            pump_frequency = liveWebInstrument.pump_frequency; // GHz
-            pump_power = liveWebInstrument.pump_power;    // dBm
-            dc_bias = liveWebInstrument.dc_bias;       // V
-            inputs[0].value = liveWebInstrument.pump_frequency.toString();
-            inputs[1].value = liveWebInstrument.pump_power.toString();
-            inputs[2].value = liveWebInstrument.dc_bias.toString();
-            inputs[3].value = liveWebInstrument.fstart.toString();
-            inputs[4].value = liveWebInstrument.fstop.toString();
-            inputs[5].value = liveWebInstrument.numpoints.toString();
-            inputs[6].value = liveWebInstrument.vna_ifbw.toString();
-            inputs[7].value = liveWebInstrument.vna_power.toString();
-            inputs[8].value = liveWebInstrument.spa_rbw.toString();
-            inputs[9].value = liveWebInstrument.spa_vbw.toString();
-            inputs[10].value = liveWebInstrument.programmable_attenuator_value.toString();
-            if(liveWebInstrument.pump_on){
-                document.getElementById("pump-status-span").innerHTML = "PUMP ON, ";
-            }
-            else{
-                document.getElementById("pump-status-span").innerHTML = "PUMP OFF, ";
-            }
-            if(liveWebInstrument.dc_source_on){
-                document.getElementById("dc-bias-status-span").innerHTML = "DC BIAS ON, ";
-            }
-            else{
-                document.getElementById("dc-bias-status-span").innerHTML = "DC BIAS OFF, ";
-            } 
-            document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-            document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
+            instrumentControl = JSON.parse(this.responseText);
+            inputs[0].value = instrumentControl.message;
+            instrumentControl.mouse_x = 0.0;
+            instrumentControl.mouse_y = 0.0;
+            instrumentControl.mouse_z = 0;//mouse wheel or equivalent
         }
     };
-    httpc.open("GET", "load-file.php?filename=live-web-instrument.json", true);
+    httpc.open("GET", "load-file.php?filename=instrument-control.json", true);
     httpc.send();
 }
 
 function draw(){
     background(255);
-    xcellindex = Math.floor(mouseX/cellsize);
-    ycellindex = Math.floor(mouseY/cellsize);
-    if(xcellindex >= 4 && xcellindex <= 8){
-        fill("#a0a0a0");
-        rect(xcellindex*cellsize,ycellindex*cellsize,cellsize,cellsize);
-    }
-
-    noFill();
-    stroke(0);
-    strokeWeight(3);  
-    line(0,cellsize,width,cellsize);
-    line(0,2*cellsize,width,2*cellsize);
-    strokeWeight(1);  
-    for(var xindex = 4; xindex < 9; xindex++){
-        for(var yindex = 0; yindex < 3; yindex++){
-           // rect(xindex*cellsize,yindex*cellsize,cellsize,cellsize);
-        }
-    }
     fill(0);
     strokeWeight(1);
-    textSize(cellsize);
+    stroke(0);
+    textSize(25);
+    text("mouse_x = " + instrumentControl.mouse_x.toString(),25,25);
+    text("mouse_y = " + instrumentControl.mouse_y.toString(),25,25 + height/3);
+    text("mouse_z = " + instrumentControl.mouse_z.toString(),25,25 + 2*height/3);
 
-    text("freq = ",0.1*cellsize,cellsize-10);
-
-    text((Math.abs(Math.trunc(pump_frequency / 10)) % 10).toString(),4*cellsize + 15,cellsize-10);
-    text((Math.abs(Math.trunc(pump_frequency)) % 10).toString(),5*cellsize + 15,cellsize-10);
-    text(".",5.6*cellsize + 15,cellsize-10);
-    text((Math.abs(Math.trunc(pump_frequency * 10)) % 10).toString(),6*cellsize + 15,cellsize-10);
-    text((Math.abs(Math.trunc(pump_frequency * 100)) % 10).toString(),7*cellsize + 15,cellsize-10);
-    text((Math.abs(Math.trunc(pump_frequency * 1000)) % 10).toString(),8*cellsize + 15,cellsize-10);
-    text("GHz",9*cellsize + 15,cellsize-10);
-
-    text("pwr = ",0.1*cellsize,2*cellsize-10);
-
-    if(Math.sign(pump_power) < 0 ){
-        text("-",3.3*cellsize + 15,2*cellsize-10);
+    if(mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height){
+        instrumentControl.mouse_x = Math.round(1000*mouseX/width)/1000;
+        instrumentControl.mouse_y = Math.round(1000*mouseY/height)/1000;
     }
-    text((Math.abs(Math.trunc(pump_power / 10)) % 10).toString(),4*cellsize + 15,2*cellsize-10);
-    text((Math.abs(Math.trunc(pump_power)) % 10).toString(),5*cellsize + 15,2*cellsize-10);
-    text(".",5.6*cellsize + 15,2*cellsize-10);
-    text((Math.abs(Math.trunc(pump_power * 10)) % 10).toString(),6*cellsize + 15,2*cellsize-10);
-    text((Math.abs(Math.trunc(pump_power * 100)) % 10).toString(),7*cellsize + 15,2*cellsize-10);
-    text((Math.abs(Math.trunc(pump_power * 1000)) % 10).toString(),8*cellsize + 15,2*cellsize-10);
-    text("dBm",9*cellsize + 15,2*cellsize-10);
     
     
-    text("bias = ",0.1*cellsize,3*cellsize-10);
-    if(Math.sign(dc_bias) < 0 ){
-        text("-",3.3*cellsize + 15,3*cellsize-10);
-    }
-    else{
-        text("+",3.3*cellsize + 15,3*cellsize-10);
-    }
-    text((Math.abs(Math.trunc(dc_bias / 10)) % 10).toString(),4*cellsize + 15,3*cellsize-10);
-    text((Math.abs(Math.trunc(dc_bias)) % 10).toString(),5*cellsize + 15,3*cellsize-10);
-    text(".",5.6*cellsize + 15,3*cellsize-10);
-    text((Math.abs(Math.trunc(dc_bias * 10)) % 10).toString(),6*cellsize + 15,3*cellsize-10);
-    text((Math.abs(Math.trunc(dc_bias * 100)) % 10).toString(),7*cellsize + 15,3*cellsize-10);
-    text((Math.abs(Math.trunc(dc_bias * 1000)) % 10).toString(),8*cellsize + 15,3*cellsize-10);
-    text("V",9*cellsize + 15,3*cellsize-10);
-    pump_frequency = Math.round(pump_frequency*1000)/1000; 
-    pump_power = Math.round(pump_power*1000)/1000; 
-    dc_bias = Math.round(dc_bias*1000)/1000; 
-    
-    if(liveWebInstrument.pump_frequency != pump_frequency || liveWebInstrument.pump_power != pump_power || liveWebInstrument.dc_bias != dc_bias){
-            liveWebInstrument.pump_frequency = pump_frequency;
-            liveWebInstrument.pump_power = pump_power;
-            liveWebInstrument.dc_bias = dc_bias;
-            inputs[0].value = liveWebInstrument.pump_frequency.toString();
-            inputs[1].value = liveWebInstrument.pump_power.toString();
-            inputs[2].value = liveWebInstrument.dc_bias.toString();
-            savejson();
-    }
-
     if (!isFetching) {
         fetchSingleFrame();
     }
@@ -270,223 +95,18 @@ function draw(){
 
 
 inputs[0].onchange = function(){
-    liveWebInstrument.pump_frequency = parseFloat(this.value);
-    savejson();
-    pump_frequency = liveWebInstrument.pump_frequency; 
-}
-inputs[1].onchange = function(){
-    liveWebInstrument.pump_power = parseFloat(this.value);
-    savejson();
-    pump_power = liveWebInstrument.pump_power; 
-}
-inputs[2].onchange = function(){
-    liveWebInstrument.dc_bias = parseFloat(this.value);
-    savejson();
-    dc_bias = liveWebInstrument.dc_bias; 
-}
-inputs[3].onchange = function(){
-    liveWebInstrument.fstart = parseFloat(this.value);
-    savejson();
-}
-inputs[4].onchange = function(){
-    liveWebInstrument.fstop = parseFloat(this.value);
-    savejson();
-}
-inputs[5].onchange = function(){
-    liveWebInstrument.numpoints = parseFloat(this.value);
-    savejson();
-}
-inputs[6].onchange = function(){
-    liveWebInstrument.vna_ifbw = parseFloat(this.value);
-    savejson();
-}
-inputs[7].onchange = function(){
-    liveWebInstrument.vna_power = parseFloat(this.value);
+    instrumentControl.message = this.value;
     savejson();
 }
 
-warmSwitchButtons = document.getElementById("warm-switch-select-table").getElementsByTagName("TD");
-
-warmSwitchButtons[0].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-warmSwitchButtons[1].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-warmSwitchButtons[2].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-warmSwitchButtons[3].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-warmSwitchButtons[4].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-
-warmSwitchButtons[5].onclick = function(){
-    liveWebInstrument.warm_switch_state = this.innerHTML;
-    document.getElementById("warm-switch-state-span").innerHTML = liveWebInstrument.warm_switch_state + ", ";
-    savejson();
-}
-
-coldSwitchButtons = document.getElementById("cold-switch-select-table").getElementsByTagName("TD");
-
-coldSwitchButtons[0].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[1].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[2].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[3].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[4].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[5].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[6].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[7].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
-coldSwitchButtons[8].onclick = function(){
-    liveWebInstrument.cold_switch_state = this.innerHTML;
-    document.getElementById("cold-switch-state-span").innerHTML = "cold switch = " + liveWebInstrument.cold_switch_state;
-    savejson();
-}
 
 function mouseWheel(event) {
-    if(xcellindex == 5 && ycellindex == 0){
-        if(event.delta > 0){ //mouse wheel down
-            pump_frequency -= 1;
-        }
-        else{
-            pump_frequency += 1;
-        }
+    if(event.delta > 0){ //mouse wheel down
+        instrumentControl.mouse_z--;
     }
-    if(xcellindex == 6 && ycellindex == 0){
-        if(event.delta > 0){ //mouse wheel down
-            pump_frequency -= 0.1;
-        }
-        else{
-            pump_frequency += 0.1;
-        }
+    else{
+        instrumentControl.mouse_z++;
     }
-    if(xcellindex == 7 && ycellindex == 0){
-        if(event.delta > 0){ //mouse wheel down
-            pump_frequency -= 0.01;
-        }
-        else{
-            pump_frequency += 0.01;
-        }
-    }
-     if(xcellindex == 8 && ycellindex == 0){
-        if(event.delta > 0){ //mouse wheel down
-            pump_frequency -= 0.001;
-        }
-        else{
-            pump_frequency += 0.001;
-        }
-    }   
-    
-    if(xcellindex == 5 && ycellindex == 1){
-        if(event.delta > 0){ //mouse wheel down
-            pump_power -= 1;
-        }
-        else{
-            pump_power += 1;
-        }
-    }
-    if(xcellindex == 6 && ycellindex == 1){
-        if(event.delta > 0){ //mouse wheel down
-            pump_power -= 0.1;
-        }
-        else{
-            pump_power += 0.1;
-        }
-    }
-    if(xcellindex == 7 && ycellindex == 1){
-        if(event.delta > 0){ //mouse wheel down
-            pump_power -= 0.01;
-        }
-        else{
-            pump_power += 0.01;
-        }
-    }
-     if(xcellindex == 8 && ycellindex == 1){
-        if(event.delta > 0){ //mouse wheel down
-            pump_power -= 0.001;
-        }
-        else{
-            pump_power += 0.001;
-        }
-    }   
-    
-    
-    if(xcellindex == 5 && ycellindex == 2){
-        if(event.delta > 0){ //mouse wheel down
-            dc_bias -= 1;
-        }
-        else{
-            dc_bias += 1;
-        }
-    }
-    if(xcellindex == 6 && ycellindex == 2){
-        if(event.delta > 0){ //mouse wheel down
-            dc_bias -= 0.1;
-        }
-        else{
-            dc_bias += 0.1;
-        }
-    }
-    if(xcellindex == 7 && ycellindex == 2){
-        if(event.delta > 0){ //mouse wheel down
-            dc_bias -= 0.01;
-        }
-        else{
-            dc_bias += 0.01;
-        }
-    }
-     if(xcellindex == 8 && ycellindex == 2){
-        if(event.delta > 0){ //mouse wheel down
-            dc_bias -= 0.001;
-        }
-        else{
-            dc_bias += 0.001;
-        }
-    }   
 }
 
 function fetchSingleFrame() {
@@ -494,13 +114,13 @@ function fetchSingleFrame() {
     const statusDiv = document.getElementById('status');
     const plotImg = document.getElementById('live-trace');
     
-    statusDiv.innerText = "Status: Fetching latest VNA sweep...";
+    statusDiv.innerText = "Status: Fetching latest data...";
     statusDiv.style.color = "#ffcc00"; 
 
     fetch('bridge.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(liveWebInstrument) 
+        body: JSON.stringify(instrumentControl) 
     })
     .then(response => {
         if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
@@ -550,12 +170,18 @@ document.getElementById("save-trace-button").onclick = function(){
     saveData.xdata = dataJSON.xdata;
     saveData.ydata = dataJSON.ydata;
     saveData.timestamp = timestamp;
-    saveData.metadata = dataJSON.metadata;
+    saveData.instrument_control = JSON.parse(JSON.stringify(instrumentControl));
     saveData.xlabel = dataJSON.xlabel;
     saveData.ylabel = dataJSON.ylabel;
     saveData.ymin = dataJSON.ymin;
     saveData.ymax = dataJSON.ymax;
-    
+    saveData.mouse_x = dataJSON.mouse_x;
+    saveData.mouse_y = dataJSON.mouse_y;
+    saveData.mouse_z = dataJSON.mouse_z;
+
+    saveData.filename = "data/data-" + timestamp + ".json";
+    saveData.plotname = "plots/plot-" + timestamp + ".png";
+    saveData.origin = "live-web-instrument.html";
     var httpcj = new XMLHttpRequest();
     var url = "save-file.php";        
     httpcj.open("POST", url, true);
