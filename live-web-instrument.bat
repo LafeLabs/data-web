@@ -1,3 +1,8 @@
 @echo off
-"%LOCALAPPDATA%\Miniforge3\python.exe" "C:\local-web-server\Apache\htdocs\live-web-instrument\live_web_instrument.py"
+echo [DEBUG 1] Switching folders...
+cd /d "C:\xampp\htdocs\data-web"
+echo [DEBUG 2] Launching Python...
+call "%USERPROFILE%\anaconda3\Scripts\activate.bat" "%USERPROFILE%\anaconda3"
+echo [DEBUG 2] running python
+python live_web_instrument.py
 pause

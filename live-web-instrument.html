@@ -36,39 +36,39 @@ instrumentControl = {}
 instrumentControl.mouse_x = 0.0;
 instrumentControl.mouse_y = 0.0;
 instrumentControl.mouse_z = 0;//mouse wheel or equivalent
+instrumentControl.message = "medium";
 
 let vnaImg = null;       // Will hold the processed p5.Image object
 let isFetching = false;  // Your guard flag defined in the fetch function
 
-liveWebInstrument = {};
 function savejson(){
     var httpc = new XMLHttpRequest();
     httpc.open("POST", "save-file.php", true);
     httpc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    httpc.send("data="+encodeURIComponent(JSON.stringify(liveWebInstrument,null,"    "))+"&filename=instrument-control.json");//send text to save-file.php    
+    httpc.send("data="+encodeURIComponent(JSON.stringify(instrumentControl,null,"    "))+"&filename=instrument-control.json");//send text to save-file.php    
 }
 
 inputs = document.getElementById("inputtable").getElementsByTagName("INPUT");
 
+var httpc = new XMLHttpRequest();
+httpc.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        instrumentControl = JSON.parse(this.responseText);
+        inputs[0].value = instrumentControl.message;
+        instrumentControl.mouse_x = 0.0;
+        instrumentControl.mouse_y = 0.0;
+        instrumentControl.mouse_z = 0;//mouse wheel or equivalent
+    }
+};
+httpc.open("GET", "load-file.php?filename=instrument-control.json", true);
+httpc.send();
+
 function setup() {
-    inputs = document.getElementById("inputtable").getElementsByTagName("INPUT");
 
     control_canvas_width = 0.48*innerWidth;
     cellsize = control_canvas_width/12;
     createCanvas(12*cellsize,3*cellsize);  
     frameRate(10);
-    var httpc = new XMLHttpRequest();
-    httpc.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            instrumentControl = JSON.parse(this.responseText);
-            inputs[0].value = instrumentControl.message;
-            instrumentControl.mouse_x = 0.0;
-            instrumentControl.mouse_y = 0.0;
-            instrumentControl.mouse_z = 0;//mouse wheel or equivalent
-        }
-    };
-    httpc.open("GET", "load-file.php?filename=instrument-control.json", true);
-    httpc.send();
 }
 
 function draw(){
@@ -101,11 +101,13 @@ inputs[0].onchange = function(){
 
 
 function mouseWheel(event) {
-    if(event.delta > 0){ //mouse wheel down
-        instrumentControl.mouse_z--;
-    }
-    else{
-        instrumentControl.mouse_z++;
+    if(mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height){
+        if(event.delta > 0){ //mouse wheel down
+            instrumentControl.mouse_z--;
+        }
+        else{
+            instrumentControl.mouse_z++;
+        }
     }
 }
 

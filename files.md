@@ -34,13 +34,15 @@
  - [README.md](README.md)
  - [data.md](data.md)
  - [files.md](files.md)
+ - [plots.md](plots.md)
 
 ## json files
 
  - [file-set.json](file-set.json)
- - [live-web-instrument.json](live-web-instrument.json)
+ - [instrument-control.json](instrument-control.json)
 
 ## python files
 
  - [jupyter.ipynb](jupyter.ipynb)
+ - [live_web_instrument.ipynb](live_web_instrument.ipynb)
  - [live_web_instrument.py](live_web_instrument.py)

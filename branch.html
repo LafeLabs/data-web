@@ -21,22 +21,22 @@ BRANCHES IN THE TREE OF THE ORGANIC WEB!
     <div id = "linklist">
         <table id = "newtable">
             <tr>
-                <td>ENTER NAME OF NEW BRANCH:</td>
+                <td>Enter name of new branch:</td>
                 <td><input/><a id = "dirlink"></a></td>
             </tr>
             <tr id = "replicatorline">
-                <td>OPTIONAL EXTERNAL REPLICATOR URL:</td>
+                <td>Optional external replicator url:</td>
                 <td><input/></td>
             </tr>
         </table>
 
         <ul id = "mainlist">
         </ul>
-        <div id = "deleteonbutton">BECOME THE DESTROYER!</div>
+        <div id = "deleteonbutton">Turn on delete mode</div>
 
     </div>
     
-    <a href = "index.html" style = "color:blue;font-size:2em;font-family:Arial;">HOME</a>
+    <a href = "index.html" style = "color:blue;font-size:2em;font-family:Arial;">index.html</a>
 
 
     
@@ -49,14 +49,8 @@ board = "";
 square = 100;
 
 
-globalurl = window.location.href.split("fork.html")[0];
-//globalurl = "https://www.southplatte.net";
-//urltext = globalurl;
-capsurl = globalurl.toUpperCase();
-capsurl = capsurl.replace("HTTPS://","");
-capsurl = capsurl.replace("HTTP://","");
-capsurl = capsurl.replace(/\//g,"/<BR/>");
-document.getElementById("header").innerHTML = capsurl;
+globalurl = window.location.href.split("branch.html")[0];
+document.getElementById("header").innerHTML = globalurl;
 
 
 codesquaresize = 170;
@@ -163,35 +157,26 @@ document.getElementById("deleteonbutton").onclick = function(){
 </script>
 <style>
 body{
-    background-color:#9f8767;
     overflow:hidden;
 }
 #linklist{
     position:absolute;
-    background-color:black;
     font-family:Arial;
     font-size:3em;
     left:5%;
     bottom:200px;
-    width:90%;
+    width:80%;
     height:50%;
     border:solid;
     border-width:8px;
-    border-radius:40px;
-    color:#00ff00;
     overflow:scroll;
+    padding:1em 1em 1em 1em;
 }
 input{
     font-size:0.8em;
-    color:#ff2cb4;
-    background-color:black;
-    border-color:#00ff00;
     font-family:Arial;
-    
 }
-#newtable{
-    color:#00ff00;
-}
+
 #deleteonbutton{
     color:red;
     cursor:pointer;
@@ -203,8 +188,8 @@ input{
     display:block;
     margin:auto;
 }
-#linklist a{
-    color:#ff2cb4;
+a{
+    color:blue;    
 }
 #header{
     font-family:Arial;
@@ -228,6 +213,7 @@ input{
     top:20px;
     right:20px;
     z-index:1;
+    display:none;
 }
 #mainlist .button{
     cursor:pointer;

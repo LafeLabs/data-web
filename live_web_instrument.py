@@ -9,9 +9,12 @@ import base64
 
 from urllib.request import urlopen
 
-with open("instrument-control.json", "r", encoding="utf-8") as file:
-    file_contents = file.read()
-instrument_control = json.loads(file_contents)
+instrument_control = {}
+instrument_control['message'] = 'media'
+
+#with open("instrument-control.json", "r", encoding="utf-8") as file:
+#    file_contents = file.read()
+#instrument_control = json.loads(file_contents)
 
 previous_state = copy.deepcopy(instrument_control)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
