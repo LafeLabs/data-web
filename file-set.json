@@ -38,6 +38,10 @@
     "save-file.php",
     "save-png.php",
     "social-data.json",
+    "text.bat",
+    "text.html",
+    "text.json",
+    "text.py",
     "upload-image.php",
     "wall.txt"
 ]
