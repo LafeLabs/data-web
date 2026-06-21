@@ -1,5 +1,23 @@
 # plots.md
 
+![](plots/plot-1781994766.png)
+
+![](plots/plot-1781994620.png)
+
+![](plots/plot-1781994188.png)
+
+![](plots/plot-1781993819.png)
+
+![](plots/plot-1781993773.png)
+
+![](plots/plot-1781993645.png)
+
+![](plots/plot-1781993498.png)
+
+![](plots/plot-1781993497.png)
+
+![](plots/plot-1781993465.png)
+
 ![](plots/plot-1781971309.png)
 
 ![](plots/plot-1781929606.png)

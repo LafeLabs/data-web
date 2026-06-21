@@ -5,6 +5,7 @@
     "bridge.php",
     "data.html",
     "data.md",
+    "data_feed.ipynb",
     "delete-branch.php",
     "delete-file.php",
     "delete-files.html",
@@ -13,6 +14,9 @@
     "files.html",
     "files.md",
     "generate-file-set.php",
+    "icon.html",
+    "icon.ipynb",
+    "icon.json",
     "index.html",
     "instrument-control.json",
     "jupyter.ipynb",
@@ -30,6 +34,7 @@
     "save-file-get.php",
     "save-file.php",
     "save-png.php",
+    "social-data.json",
     "upload-image.php",
     "wall.txt"
 ]

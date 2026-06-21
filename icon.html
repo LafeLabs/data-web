@@ -3,7 +3,7 @@
 <head>
    <meta charset="utf-8">
 <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/9wAA7usAAFVRAAC7uwAA//cAAPrfAAD63wAA+t8AAPjfAAD7jwAA+98AAPvfAAD71wAA++8AAP//AAD//wAA" rel="icon" type="image/x-icon">   
-   <title>Live Web Instrument</title>    
+   <title>Draw an icon</title>
    <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
 </head>
 <body> 
@@ -17,8 +17,19 @@
                 <input>
             </td>
         </tr>
+        <tr>
+            <td>lat:</td>
+            <td>
+                <input>
+            </td>
+        </tr>
+        <tr>
+            <td>lon:</td>
+            <td>
+                <input>
+            </td>
+        </tr>
     </table>
-
 </div>
 <div id = "data-scroll">
     <h1>DATA</h1>
@@ -29,14 +40,18 @@
     <div id = "plot-feed"></div>
 </div>
 <script>
-
-
-instrumentControl = {}
-
-instrumentControl.mouse_x = 0.0;
-instrumentControl.mouse_y = 0.0;
-instrumentControl.mouse_z = 0;//mouse wheel or equivalent
-instrumentControl.message = "medium";
+dataJSON = {};
+icon0 = {
+    "type":"icon",
+    "message":"icon data",
+    "lat":40.0,
+    "lon":-105.0,
+    "brush_strokes":[]
+};
+brushstroke = [];
+thispoint = {};
+thispoint.x = 0;//x position in units of 1/1024 of width
+thispoint.y = 0;//y position in units of 1/1024 of height from top
 
 let vnaImg = null;       // Will hold the processed p5.Image object
 let isFetching = false;  // Your guard flag defined in the fetch function
@@ -45,7 +60,7 @@ function savejson(){
     var httpc = new XMLHttpRequest();
     httpc.open("POST", "save-file.php", true);
     httpc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    httpc.send("data="+encodeURIComponent(JSON.stringify(instrumentControl,null,"    "))+"&filename=instrument-control.json");//send text to save-file.php    
+    httpc.send("data="+encodeURIComponent(JSON.stringify(icon,null,"    "))+"&filename=icon.json");//send text to save-file.php    
 }
 
 inputs = document.getElementById("inputtable").getElementsByTagName("INPUT");
@@ -53,39 +68,59 @@ inputs = document.getElementById("inputtable").getElementsByTagName("INPUT");
 var httpc = new XMLHttpRequest();
 httpc.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-        instrumentControl = JSON.parse(this.responseText);
-        inputs[0].value = instrumentControl.message;
-        instrumentControl.mouse_x = 0.0;
-        instrumentControl.mouse_y = 0.0;
-        instrumentControl.mouse_z = 0;//mouse wheel or equivalent
+        icon = JSON.parse(this.responseText);
+        inputs[0].value = icon.message;
+        icon.brush_strokes = [];
+        icon.lat = icon0.lat;
+        icon.lon = icon0.lon;
+        inputs[1].value = icon.lat;
+        inputs[2].value = icon.lon;
+        icon.type = "icon";
     }
+    
 };
-httpc.open("GET", "load-file.php?filename=instrument-control.json", true);
+httpc.open("GET", "load-file.php?filename=icon.json", true);
 httpc.send();
 
 function setup() {
-
     control_canvas_width = 0.48*innerWidth;
-    cellsize = control_canvas_width/12;
-    createCanvas(12*cellsize,3*cellsize);  
-    frameRate(10);
+    createCanvas(control_canvas_width,control_canvas_width);  
+    //frameRate(10);
+    stroke(0);
+    strokeWeight(30);
+
 }
 
+inLine = false;
 function draw(){
-    background(255);
-    fill(0);
-    strokeWeight(1);
     stroke(0);
-    textSize(25);
-    text("mouse_x = " + instrumentControl.mouse_x.toString(),25,25);
-    text("mouse_y = " + instrumentControl.mouse_y.toString(),25,25 + height/3);
-    text("mouse_z = " + instrumentControl.mouse_z.toString(),25,25 + 2*height/3);
-
-    if(mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height){
-        instrumentControl.mouse_x = Math.round(1000*mouseX/width)/1000;
-        instrumentControl.mouse_y = Math.round(1000*mouseY/height)/1000;
-    }
+    strokeWeight(30);
     
+    if(mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height){
+      if (mouseIsPressed === true) {
+        if(inLine == false){
+            var  point = {};
+            point.x = Math.round(1024*mouseX/width);
+            point.y = Math.round(1024*mouseY/width);
+            brushstroke.push(point);
+        }
+        line(mouseX, mouseY, pmouseX, pmouseY);
+        inLine = true;
+        if(mouseX != pmouseX || mouseY != pmouseY){
+            var  point = {};
+            point.x = Math.round(1024*mouseX/width);
+            point.y = Math.round(1024*mouseY/width);
+            brushstroke.push(point);
+        }
+      }
+      else{
+          if(inLine){
+              icon.brush_strokes.push(JSON.parse(JSON.stringify(brushstroke)));
+              brushstroke = [];
+          }
+          inLine = false;
+      }
+  }
     
     if (!isFetching) {
         fetchSingleFrame();
@@ -95,7 +130,7 @@ function draw(){
 
 
 inputs[0].onchange = function(){
-    instrumentControl.message = this.value;
+    icon.message = this.value;
     savejson();
 }
 
@@ -103,10 +138,10 @@ inputs[0].onchange = function(){
 function mouseWheel(event) {
     if(mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height){
         if(event.delta > 0){ //mouse wheel down
-            instrumentControl.mouse_z--;
+
         }
         else{
-            instrumentControl.mouse_z++;
+
         }
     }
 }
@@ -122,7 +157,7 @@ function fetchSingleFrame() {
     fetch('bridge.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(instrumentControl) 
+        body: JSON.stringify(icon) 
     })
     .then(response => {
         if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
@@ -155,6 +190,9 @@ function fetchSingleFrame() {
 }
 
 document.getElementById("save-trace-button").onclick = function(){
+    
+    savejson();
+    
     png64 = document.getElementById('live-trace').src;
     var newimg = document.createElement("IMG");
     document.getElementById("plot-feed").prepend(newimg);
@@ -171,24 +209,21 @@ document.getElementById("save-trace-button").onclick = function(){
     saveData.xdata = dataJSON.xdata;
     saveData.ydata = dataJSON.ydata;
     saveData.timestamp = timestamp;
-    saveData.instrument_control = JSON.parse(JSON.stringify(instrumentControl));
     saveData.xlabel = dataJSON.xlabel;
     saveData.ylabel = dataJSON.ylabel;
     saveData.ymin = dataJSON.ymin;
     saveData.ymax = dataJSON.ymax;
-    saveData.mouse_x = dataJSON.mouse_x;
-    saveData.mouse_y = dataJSON.mouse_y;
-    saveData.mouse_z = dataJSON.mouse_z;
+    saveData.icon = JSON.parse(JSON.stringify(icon));
 
     saveData.filename = "data/data-" + timestamp + ".json";
     saveData.plotname = "plots/plot-" + timestamp + ".png";
-    saveData.origin = "live-web-instrument.html";
+    saveData.origin = "icon.html";
     var httpcj = new XMLHttpRequest();
     var url = "save-file.php";        
     httpcj.open("POST", url, true);
     httpcj.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
     httpcj.send("data=" + JSON.stringify(saveData) + "&filename=data/data-" + timestamp + ".json");//send text to save-file.php
-    
+
 }
 
 drawplots();
