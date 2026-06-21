@@ -48,19 +48,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 dataset['ymax'] = 1.2
                 dataset['icon'] = icon                
                 plt.cla()
-                
                 plt.figure(figsize=(6, 6))
                 for stroke in icon['brush_strokes']:
                     xdata = [point['x'] for point in stroke]
                     ydata = [point['y'] for point in stroke]
-                    xdata += 8*np.random.randn(len(xdata))
-                    ydata += 8*np.random.randn(len(xdata))
-                    plt.plot(xdata, ydata, color='black', linewidth=3, solid_capstyle='round')
+                    xdata += icon['temperature']*np.random.randn(len(xdata))
+                    ydata += icon['temperature']*np.random.randn(len(xdata))
+                    plt.plot(xdata, ydata, color='black', linewidth=10, solid_capstyle='round')
+                plt.text(30, 30,f"temperature = {icon['temperature']:.1f}")
+                plt.text(30, 60,f"lat,lon = {icon['lat']:.4f},{icon['lon']:.4f}")
 
                 plt.xlim(0, 1023)
                 plt.ylim(1023, 0)
-                plt.grid(True, linestyle='--', alpha=0.5)
-                plt.title(f"Visualized Input: {icon['message']}")
+#                plt.grid(True, linestyle='--', alpha=0.5)
+                plt.title(f"message: {icon['message']}")
                 plt.xlabel("X Coordinate")
                 plt.ylabel("Y Coordinate")                    
                 plt.tight_layout()

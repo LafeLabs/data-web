@@ -1,5 +1,11 @@
 # plots.md
 
+![](plots/plot-1782009608.png)
+
+![](plots/plot-1782009469.png)
+
+![](plots/plot-1782009133.png)
+
 ![](plots/plot-1782000884.png)
 
 ![](plots/plot-1782000863.png)
